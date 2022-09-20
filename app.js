@@ -4,23 +4,23 @@ const port = process.env.PORT || 3000
 const tasks = require('./routes/tasks')
 const connectDB = require('./db/connect')
 require('dotenv').config()
+require('express-async-errors')
 
 // middleware
+const notFoundMiddleware = require('./middleware/not-found')
+const errorHandlerMiddleware = require('./middleware/error-handler')
 app.use(express.static('./public'))
 app.use(express.json())
 
 // routes
 app.use('/api/v1/tasks', tasks)
 
-app.use((req, res) => res.status(404).send('404 NOT FOUND'))
+app.use(notFoundMiddleware)
+app.use(errorHandlerMiddleware)
 
 // server only start after connecting DB successfully
 const start = async () => {
-  try {
-    await connectDB(process.env.MONGO_URI)
-    app.listen(port, () => console.log(`http://localhost:${port}/`))
-  } catch (error) {
-    console.log(error)
-  }
+  await connectDB(process.env.MONGO_URI)
+  app.listen(port, () => console.log(`http://localhost:${port}/`))
 }
 start()
